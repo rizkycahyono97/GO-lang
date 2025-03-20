@@ -68,15 +68,8 @@ Proyek ini berisi kumpulan contoh kode untuk memahami dasar-dasar bahasa pemrogr
 3.  Jalankan setiap file dengan perintah:
     
     ```sh
-    go run *nama_file.go*
+    go run nama_file.go
     ```
-    
-4.  Untuk mengelola modul, gunakan perintah:
-    
-    ```sh
-    go mod tidy
-    ```
-    
 
 ## Kontribusi
 
