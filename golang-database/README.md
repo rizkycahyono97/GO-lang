@@ -61,9 +61,7 @@ Menerapkan pola repository untuk memisahkan logika akses database dari logika bi
 ## 🔗 Referensi
 
 * *   [Golang Database Documentation](https://pkg.go.dev/database/sql)
-*     
 * *   [MySQL Golang Driver](https://github.com/go-sql-driver/mysql)
-*     
 
 * * *
 
