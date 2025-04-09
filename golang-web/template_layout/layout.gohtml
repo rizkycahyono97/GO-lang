@@ -1,0 +1,11 @@
+<!-- titik . => semua data dikirim juga dari header.gohtml -->
+{{ define "layout" }}   <!-- define = untuk inisialisasi nama -->
+    {{ template "header" . }}     
+        
+    <main>
+        <h2>Hello, {{ .Name }}</h2>
+        <p>This is a simple layout example using Go templates.</p>
+    </main>
+
+    {{ template "footer" . }}
+{{ end }}
