@@ -50,12 +50,11 @@ Penerapan middleware di HttpRouter untuk logging, autentikasi, dan fitur lainnya
 
 ## 🔧 Teknologi
 
-* *   Golang
-*     
-* *   HttpRouter (`github.com/julienschmidt/httprouter`)
-*     
-* *   Unit testing dengan `net/http/httptest` dan `stretchr/testify`
-*     
+*    Golang    
+
+*    HttpRouter (`github.com/julienschmidt/httprouter`)    
+ 
+*    Unit testing dengan `net/http/httptest` dan `stretchr/testify`
 
 * * *
 
