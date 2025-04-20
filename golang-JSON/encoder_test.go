@@ -24,3 +24,4 @@ func TestEncoder(t *testing.T) {
 	// Encode JSON to file
 	encoder.Encode(customer)	// Encode JSON to file
 }
+ 
