@@ -1,135 +1,182 @@
-# GOLANG-RESTFUL-API
-Aplikasi ini merupakan implementasi RESTful API sederhana menggunakan bahasa Go (Golang) untuk manajemen data `Category`. API ini memiliki fitur `CRUD`, menggunakan database `MySQL`, dan menerapkan konsep Clean Architecture (layered).
+# Golang Database Migrations
 
-## Arsitektur Aplikasi
-![Desktop](assets/img.png)
-
-## 🧱 Urutan Pembuatan Project
-
-```markdown
-1. model/domain        → Buat struktur tabel (Category)
-2. repository          → Buat interface + query DB
-3. service             → Implementasikan logic di atas repository
-4. model/web           → Buat struct input/output API
-5. controller          → Parsing request, panggil service, balikin response
-6. middleware          → Tambahkan otorisasi (API Key)
-7. helper              → Fungsi bantu response/error/tx
-8. exception           → Buat NotFoundError atau BadRequest
-9. app/router.go       → Mapping URL ke controller
-10. app/database.go    → Setup koneksi database
-11. main.go            → Jalankan server, inject semua dependency
-12. test/category_test → Buat unit test / integration test
-13. test.http          → Testing manual
-```
-
-## 📁 Struktur Folder dan Kegunaan
-
-```markdown
-golang-restful-api/
-├── app/                # Inisialisasi router dan koneksi database
-├── controller/         # Handler/controller yang menerima HTTP request
-├── exception/          # Custom error handler dan middleware untuk error
-├── helper/             # Fungsi-fungsi utilitas (JSON, TX, Error, dll)
-├── middleware/         # Middleware (contoh: autentikasi API Key)
-├── model/
-│   ├── domain/         # Struktur data model untuk database
-│   └── web/            # Struktur data untuk request & response API
-├── repository/         # Interaksi langsung ke database (CRUD)
-├── service/            # Logika bisnis aplikasi
-├── test/               # Unit test untuk controller dan fitur API
-├── main.go             # Entry point aplikasi
-├── go.mod              # File module Go
-├── go.sum              # Checksum dependency Go
-└── test.http           # Contoh testing API menggunakan HTTP client
-```
-
-## ✅ Fitur
-
-```markdown
-1. Autentikasi menggunakan X-API-Key
-2. API Endpoint:
-    - GET /api/categories – Get all categories
-    - GET /api/categories/{id} – Get category by ID
-    - POST /api/categories – Create new category
-    - PUT /api/categories/{id} – Update category
-    - DELETE /api/categories/{id} – Delete category
-3. Validasi input JSON
-4. Struktur response konsisten (code, status, data)
-5. Testing otomatis menggunakan httptest
-```
-
-## 💻 Cara Menjalankan Aplikasi
-```markdown
-1. Clone Repository
-git clone https://github.com/rizkycahyono97/golang-restful-api.git
-cd golang-restful-api
-
-2. Setup Database (MySQL/MariaDB)
-Buat database baru di MySQL:
-    - CREATE DATABASE golang_api;
-    - CREATE TABLE category(
-      id int primary key auto_increment,
-      name varchar(200) NOT NULL
-      ) engine = innodb
-    
-3. Konfigurasi koneksi database
-Di app/database.go, ubah sesuai kredensial lokal:
-dsn := "root:password@tcp(localhost:3306)/golang_api"
-
-4. Jalankan Aplikasi
-go run main.go
-
-5. Coba API dengan Postman atau REST Client
-Contoh:
-GET all categories
-GET http://localhost:8080/api/categories
-X-API-Key: RAHASIA
-Accept: application/json
-```
-
-## 🧪 Cara Testing
-```markdown
-1. Jalankan semua test:
-go test ./test
-
-Jika muncul error dependency seperti:
-missing go.sum entry for module ...
-
-Jalankan:
-go mod tidy
-
-2. Test dengan HTTP
-    test.http
-```
-
-## 📦 Dependency
-```bash
-github.com/go-sql-driver/mysql – Driver MySQL
-github.com/gorilla/mux – Router HTTP
-github.com/stretchr/testify – Library testing (assert)
-context – Built-in Go untuk handling request context
-```
-
-### 🔐 API Key
-```markdown
-Untuk mengakses semua endpoint, tambahkan header:
-X-API-Key: RAHASIA
-```
-
-### 📌 Catatan
-```bash
-Struktur response API menggunakan format:
-
-
-{
-  "code": 200,
-  "status": "OK",
-  "data": [...]
-}
-```
-
-👨‍💻 Author
-*Rizky Cahyono Putra* 
-Built with ❤️ using Golang
+Repository ini menggunakan **`golang-migrate`**, sebuah alat untuk mengelola migrasi database dalam proyek Go. Berikut adalah panduan untuk membuat, menjalankan, dan mengelola migrasi database.
 
 ---
+
+## **Prasyarat**
+
+1. **Instalasi `golang-migrate`**
+   Pastikan `golang-migrate` sudah terinstal di sistem Anda. Jika belum, instal dengan perintah berikut:
+   ```bash
+   go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+   ```
+   Atau unduh binary langsung dari [GitHub Releases](https://github.com/golang-migrate/migrate/releases).
+
+2. **Database MySQL**
+   Pastikan database MySQL sudah berjalan dan dapat diakses. Konfigurasi koneksi database digunakan dalam perintah migrasi.
+
+3. **Direktori Migrasi**
+   Direktori `db/migrations` digunakan untuk menyimpan file migrasi. Pastikan direktori ini ada atau buat dengan perintah:
+   ```bash
+   mkdir -p db/migrations
+   ```
+
+---
+
+## **Command Dasar**
+
+### **1. Membuat File Migrasi Baru**
+Untuk membuat file migrasi baru, gunakan perintah berikut:
+```bash
+migrate create -ext sql -dir db/migrations <nama_migrasi>
+```
+
+- **`-ext sql`**: Menentukan ekstensi file migrasi (`.sql`).
+- **`-dir db/migrations`**: Menentukan lokasi penyimpanan file migrasi.
+- **`<nama_migrasi>`**: Nama deskriptif untuk migrasi (misalnya, `create_table_users`).
+
+Contoh:
+```bash
+migrate create -ext sql -dir db/migrations create_table_users
+```
+
+Ini akan membuat dua file baru di direktori `db/migrations`:
+- `YYYYMMDDHHMMSS_create_table_users.up.sql` (untuk migrasi naik)
+- `YYYYMMDDHHMMSS_create_table_users.down.sql` (untuk rollback)
+
+---
+
+### **2. Menjalankan Migrasi**
+Untuk menjalankan semua migrasi yang belum diterapkan, gunakan perintah berikut:
+```bash
+migrate -database "<koneksi_database>" -path db/migrations up
+```
+
+- **`<koneksi_database>`**: URL koneksi ke database. Contoh untuk MySQL:
+  ```
+  mysql://root:root@tcp(localhost:3306)/golang_restful_api_migrations
+  ```
+
+Contoh:
+```bash
+migrate -database "mysql://root:root@tcp(localhost:3306)/golang_restful_api_migrations" -path db/migrations up
+```
+
+---
+
+### **3. Rollback Migrasi**
+Untuk rollback migrasi, gunakan perintah berikut:
+```bash
+migrate -database "<koneksi_database>" -path db/migrations down
+```
+
+Ini akan menjalankan file `.down.sql` dari migrasi terakhir.
+
+Contoh:
+```bash
+migrate -database "mysql://root:root@tcp(localhost:3306)/golang_restful_api_migrations" -path db/migrations down
+```
+
+---
+
+### **4. Menjalankan/Rollback Berdasarkan Jumlah Langkah**
+Anda dapat menjalankan atau rollback migrasi berdasarkan jumlah langkah tertentu.
+
+- **Menjalankan migrasi sebanyak `n` langkah:**
+  ```bash
+  migrate -database "<koneksi_database>" -path db/migrations up <jumlah_langkah>
+  ```
+
+- **Rollback migrasi sebanyak `n` langkah:**
+  ```bash
+  migrate -database "<koneksi_database>" -path db/migrations down <jumlah_langkah>
+  ```
+
+Contoh:
+```bash
+migrate -database "mysql://root:root@tcp(localhost:3306)/golang_restful_api_migrations" -path db/migrations up 2
+```
+
+---
+
+### **5. Memeriksa Versi Migrasi**
+Untuk memeriksa versi migrasi saat ini, gunakan perintah berikut:
+```bash
+migrate -database "<koneksi_database>" -path db/migrations version
+```
+
+Contoh:
+```bash
+migrate -database "mysql://root:root@tcp(localhost:3306)/golang_restful_api_migrations" -path db/migrations version
+```
+
+---
+
+### **6. Menangani Dirty State**
+Jika migrasi gagal dan database dalam keadaan "dirty", Anda perlu memperbaiki status migrasi secara manual menggunakan perintah `force`.
+
+- **Memaksa ke versi tertentu:**
+  ```bash
+  migrate -database "<koneksi_database>" -path db/migrations force <versi_target>
+  ```
+
+Contoh:
+```bash
+migrate -database "mysql://root:root@tcp(localhost:3306)/golang_restful_api_migrations" -path db/migrations force 20250522122711
+```
+
+Setelah itu, jalankan migrasi kembali.
+
+---
+
+## **Struktur File Migrasi**
+
+File migrasi terdiri dari dua bagian:
+1. **`up.sql`**: Digunakan untuk menerapkan perubahan ke database (misalnya, membuat tabel baru).
+2. **`down.sql`**: Digunakan untuk rollback perubahan (misalnya, menghapus tabel).
+
+Contoh:
+
+**`20231001000000_create_table_users.up.sql`:**
+```sql
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+**`20231001000000_create_table_users.down.sql`:**
+```sql
+DROP TABLE users;
+```
+
+---
+
+## **Tips Penggunaan**
+
+1. **Backup Database**
+    - Selalu backup database sebelum menjalankan migrasi, terutama di lingkungan produksi.
+
+2. **Uji Migrasi Lokal**
+    - Uji migrasi di lingkungan lokal sebelum menerapkannya ke server produksi.
+
+3. **Gunakan Transaksi**
+    - Pastikan migrasi Anda menggunakan transaksi jika memungkinkan untuk memastikan rollback otomatis jika terjadi kesalahan.
+
+4. **Nama Migrasi Deskriptif**
+    - Gunakan nama migrasi yang jelas dan deskriptif untuk memudahkan pemahaman.
+
+---
+
+## **Referensi**
+
+- Dokumentasi Resmi: [https://github.com/golang-migrate/migrate](https://github.com/golang-migrate/migrate)
+- Driver Database: Pastikan driver untuk database Anda (misalnya, MySQL) telah diinstal.
+
+---
+
+Dengan panduan ini, Anda dapat mengelola migrasi database dengan mudah menggunakan `golang-migrate`. Jika ada pertanyaan lebih lanjut, silakan ajukan! 😊
